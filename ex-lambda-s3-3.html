@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>람다를 활용한 S3 버캣 정보 얻기</title>
+    <style type="text/css">
+        body * {font-siz:0.7rem;}
+        h1 {
+            font-size:1.2rem;text-align: center; color:#fff; font-weight: bold;
+            background-color:#000;margin:0;padding:5px;
+        }
+        #container {
+            width:50%;min-width: 200px;max-width: 600px; 
+            margin:0 auto;padding:5px; border: 1px solid #000;
+        }
+        #container>* {margin-bottom:5px;}
+        dl {border:1px solid #ccc;margin:0;margin-bottom:5px;padding:0;}
+        dt {
+            border-bottom:1px solid #ccc;background-color:#efefef;
+            cursor: pointer; font-weight: bold;
+        }
+        dd {margin:0;padding-left:20px;border-bottom:1px dashed #ccc;}
+    </style>
+    <script src=https://code.jquery.com/jquery-3.6.1.js></script>
+    <script>
+        $().ready(function(){
+            $.getJSON({
+                url : "https://0zx32bi6ea.execute-api.ap-northeast-2.amazonaws.com/default/ex-lambda-s3-1",
+                success : function(data) {
+                    for(let bucket of data) {
+                        $dl = $("<dl><dt><span>▶</span></dt></dl>");
+                        $dl.prop("id",bucket);
+                        $dl.children("dt").children("span").after(bucket);
+                        $("#bucketListArea").append($dl);
+                    }
+                }
+            });//e:$.getJSON()
+            // ###################################################################
+            $(document).on("click","dt", function(ev){
+                let $blit = $(this).children("span");
+                bucketName = $(this).parents("dl").prop("id");
+                loadObject(this, bucketName);
+             });//e:$(document).on("click","dt")
+            // ###################################################################
+            function loadObject(dt, bucketName) {
+                $dt = $(dt);
+                $.getJSON({
+                    url : "https://zhtnqa7915.execute-api.ap-northeast-2.amazonaws.com/default/ex-lambda-s3-2",
+                    data : {
+                        "bucketName": bucketName
+                    },
+                    success : function(data) {
+                        if(data.length) {
+                            $("#bucketListArea dd").remove();
+                            $("#bucketListArea dt span").text("▶");
+                            $("#bucketListArea dt span").css("color","#000");
+                            $dt.children("span").text("▼");
+                            $dt.children("span").css("color","#f00");
+                            for(let obj of data) {
+                                $dd = $("<dd></dd>");
+                                $link = $("<a></a>");
+                                url = "https://ldbf5sjp26.execute-api.ap-northeast-2.amazonaws.com/default/ex-lambda-s3-3"
+                                url+="?bucketName="+bucketName+"&objectName="+obj; 
+                                $link.attr("href",url)
+                                $link.text(obj);
+                                $dd.append($link);
+                                $dt.after($dd);
+                            }
+                        }
+                    }
+                });//e:$.getJSON()
+            }
+        });//e:$().ready()
+    </script>
+</head>
+<body>
+    <div id="container">
+        <h1>AWS Lambda를 활용한 S3 버캣 정보 얻기</h1>
+        <div id="bucketListArea"></div>
+    </div>
+</body>
+</html>
